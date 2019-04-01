@@ -8,20 +8,35 @@ public class SeekAndDestroy
     public static String LF = "\n";
     public static int controlPort = 6000;
     public static String host = "localhost";
+    String command;
+    Socket clientSocket;
 
     public static void main(String[] args)
     {
-        Socket clientSocket;
+        SeekAndDestroy sad = new SeekAndDestroy();
         try
         {
-            clientSocket = initConnection();
             //System.out.println(clientSocket.getOutputStream());
-            sendStringToPort("USER bilkent\\r\\n", clientSocket);
+            //sendStringToPort("USER bilkent\\r\\n", clientSocket);
+            sad.sendUserName("bilkent");
+            sad.sendPass("cs421");
+            sad.sendPort(53462);
+            sad.nlst();
+
         }
-        catch (IOException ioe)
+        catch (Exception ioe)
         {
             ioe.printStackTrace();
             System.out.println("Connection Failure");
+        }
+    }
+    public SeekAndDestroy()
+    {
+        try {
+            clientSocket = initConnection();
+        }catch (IOException e)
+        {
+            e.printStackTrace();
         }
     }
     /**
@@ -29,50 +44,67 @@ public class SeekAndDestroy
      * */
     private static Socket initConnection() throws IOException
     {
-        Socket clientSocket = new Socket(host, controlPort);
-        return clientSocket;
+        return new Socket(host, controlPort);
     }
 
     private void sendUserName(String username)
     {
-
+        command = "USER" + " " + username + CR + LF;
+        sendStringToPort(command);
     }
     private void sendPass(String password)
     {
-
+        command = "PASS" + " " + password + CR + LF;
+        sendStringToPort(command);
     }
     private void sendPort(int port)
     {
-
+        command = "PORT" + " " + port + CR + LF;
+        sendStringToPort(command);
     }
     private void nlst()
     {
-
+        command = "NLST" + CR + LF;
+        sendStringToPort(command);
     }
     private void cwd(String child)
     {
-
+        command = "CWD" + child + CR + LF;
+        sendStringToPort(command);
     }
     private void cdup()
     {
-
+        command = "CDUP" + CR + LF;
+        sendStringToPort(command);
     }
-    private void sendRetry(String filename)
+    private void retry(String filename)
     {
-
+        command = "RETR" + filename + CR + LF;
+        sendStringToPort(command);
     }
-    private void sendDelete(String filename)
+    private void delete(String filename)
     {
-
+        command = "DELE" + filename + CR + LF;
+        sendStringToPort(command);
     }
-    private void quit()
+    private void quit(Socket clientSocket)
     {
-
+        command = "QUIT" + CR + LF;
+        sendStringToPort(command);
     }
-    private static void sendStringToPort(String str, Socket clientSocket) throws IOException
+    private void sendStringToPort(String str)
     {
-        OutputStreamWriter outputStreamWriter =
-                new OutputStreamWriter(clientSocket.getOutputStream(), "UTF-8");
-        outputStreamWriter.write(str, 0, str.length());
+        try {
+
+
+            OutputStreamWriter outputStreamWriter =
+                    new OutputStreamWriter(clientSocket.getOutputStream(), "UTF-8");
+            outputStreamWriter.write(str, 0, str.length());
+            outputStreamWriter.flush();
+            outputStreamWriter.close();
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 }
