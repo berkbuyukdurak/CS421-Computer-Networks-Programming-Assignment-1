@@ -1,5 +1,5 @@
 import java.io.IOException;
-import java.net.ServerSocket;
+import java.io.OutputStreamWriter;
 import java.net.Socket;
 
 public class SeekAndDestroy
@@ -11,13 +11,17 @@ public class SeekAndDestroy
 
     public static void main(String[] args)
     {
-        try {
-            Socket clientSocket = initConnection();
-            System.out.println(clientSocket.getOutputStream());
-        } catch (IOException ioe)
+        Socket clientSocket;
+        try
+        {
+            clientSocket = initConnection();
+            //System.out.println(clientSocket.getOutputStream());
+            sendStringToPort("USER bilkent\\r\\n", clientSocket);
+        }
+        catch (IOException ioe)
         {
             ioe.printStackTrace();
-            System.out.println("Fail");
+            System.out.println("Connection Failure");
         }
     }
     /**
@@ -26,7 +30,6 @@ public class SeekAndDestroy
     private static Socket initConnection() throws IOException
     {
         Socket clientSocket = new Socket(host, controlPort);
-        System.out.println("Here");
         return clientSocket;
     }
 
@@ -65,5 +68,11 @@ public class SeekAndDestroy
     private void quit()
     {
 
+    }
+    private static void sendStringToPort(String str, Socket clientSocket) throws IOException
+    {
+        OutputStreamWriter outputStreamWriter =
+                new OutputStreamWriter(clientSocket.getOutputStream(), "UTF-8");
+        outputStreamWriter.write(str, 0, str.length());
     }
 }
