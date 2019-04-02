@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.ServerSocket;
 import java.net.Socket;
 
 public class SeekAndDestroy
@@ -12,7 +13,7 @@ public class SeekAndDestroy
     public static String host = "localhost";
     String command;
     Socket clientSocket;
-    Socket clientDataSocket;
+    ServerSocket clientDataSocket;
 
     public static void main(String[] args)
     {
@@ -21,8 +22,8 @@ public class SeekAndDestroy
         {
             sad.sendUserName("bilkent");
             sad.sendPass("cs421");
+            sad.clientDataSocket = new ServerSocket(dataPort);
             sad.sendPort(dataPort);
-            sad.clientDataSocket = new Socket(host, dataPort);
             //sad.nlst();
             sad.quit();
 
