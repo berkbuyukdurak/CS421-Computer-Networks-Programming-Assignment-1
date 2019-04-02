@@ -1,6 +1,4 @@
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -92,20 +90,27 @@ public class SeekAndDestroy
         command = "QUIT" + CR + LF;
         sendStringToPort(command);
     }
-    private void sendStringToPort(String str)
+    private InputStream sendStringToPort(String str)
     {
         try {
             OutputStreamWriter outputStreamWriter =
                     new OutputStreamWriter(clientSocket.getOutputStream()
                             , "UTF-8");
-            InputStreamReader inputStreamReader =
-                    new InputStreamReader(clientSocket.getInputStream());
-            System.out.println(inputStreamReader);
-            outputStreamWriter.write(str, 0, str.length());
+            outputStreamWriter.write(str, 0, str.length()); // Send command
             outputStreamWriter.flush();
+
+            return clientSocket.getInputStream();
+            /*InputStreamReader inputStreamReader =
+                    new InputStreamReader(clientSocket.getInputStream());
+            BufferedReader bufferedReader =
+                    new BufferedReader(inputStreamReader);
+
+            System.out.println(bufferedReader.readLine());*/
+
         } catch (IOException e)
         {
             e.printStackTrace();
+            return null;
         }
     }
 }
