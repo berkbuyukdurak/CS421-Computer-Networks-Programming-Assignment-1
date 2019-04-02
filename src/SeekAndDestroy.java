@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 
@@ -7,21 +8,23 @@ public class SeekAndDestroy
     public static String CR = "\r";
     public static String LF = "\n";
     public static int controlPort = 6000;
+    public static int dataPort = 53462;
     public static String host = "localhost";
     String command;
     Socket clientSocket;
+    Socket clientDataSocket;
 
     public static void main(String[] args)
     {
         SeekAndDestroy sad = new SeekAndDestroy();
         try
         {
-            //System.out.println(clientSocket.getOutputStream());
-            //sendStringToPort("USER bilkent\\r\\n", clientSocket);
             sad.sendUserName("bilkent");
             sad.sendPass("cs421");
-            sad.sendPort(53462);
-            sad.nlst();
+            sad.sendPort(dataPort);
+            sad.clientDataSocket = new Socket(host, dataPort);
+            //sad.nlst();
+            sad.quit();
 
         }
         catch (Exception ioe)
@@ -30,23 +33,19 @@ public class SeekAndDestroy
             System.out.println("Connection Failure");
         }
     }
+    // Default Constructor
     public SeekAndDestroy()
     {
         try {
-            clientSocket = initConnection();
+            clientSocket = new Socket(host, controlPort);
         }catch (IOException e)
         {
             e.printStackTrace();
         }
     }
     /**
-     * Init.s connection to the specified server
+     * Commands
      * */
-    private static Socket initConnection() throws IOException
-    {
-        return new Socket(host, controlPort);
-    }
-
     private void sendUserName(String username)
     {
         command = "USER" + " " + username + CR + LF;
@@ -87,7 +86,7 @@ public class SeekAndDestroy
         command = "DELE" + filename + CR + LF;
         sendStringToPort(command);
     }
-    private void quit(Socket clientSocket)
+    private void quit()
     {
         command = "QUIT" + CR + LF;
         sendStringToPort(command);
@@ -95,13 +94,14 @@ public class SeekAndDestroy
     private void sendStringToPort(String str)
     {
         try {
-
-
             OutputStreamWriter outputStreamWriter =
-                    new OutputStreamWriter(clientSocket.getOutputStream(), "UTF-8");
+                    new OutputStreamWriter(clientSocket.getOutputStream()
+                            , "UTF-8");
+            InputStreamReader inputStreamReader =
+                    new InputStreamReader(clientSocket.getInputStream());
+            System.out.println(inputStreamReader);
             outputStreamWriter.write(str, 0, str.length());
             outputStreamWriter.flush();
-            outputStreamWriter.close();
         } catch (IOException e)
         {
             e.printStackTrace();
