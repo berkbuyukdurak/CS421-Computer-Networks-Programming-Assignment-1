@@ -13,8 +13,15 @@ public class SeekAndDestroy
     Socket clientSocket;
     ServerSocket clientDataSocket;
 
+    /**
+     * In the control port client connects to server as a client sends string commands
+     * Command string generation and output processing etc. are defined below.
+     *
+     * In data connection Server connects to client ! (Reversed)
+     * */
     public static void main(String[] args)
     {
+        // sad is a class object to call functions from
         SeekAndDestroy sad = new SeekAndDestroy();
         try
         {
@@ -36,7 +43,7 @@ public class SeekAndDestroy
     public SeekAndDestroy()
     {
         try {
-            clientSocket = new Socket(host, controlPort);
+            clientSocket = new Socket(host, controlPort); // this is control connection
         }catch (IOException e)
         {
             e.printStackTrace();
@@ -44,6 +51,7 @@ public class SeekAndDestroy
     }
     /**
      * Commands
+     * They are self explanatory in context of the project
      * */
     private void sendUserName(String username)
     {
@@ -75,7 +83,7 @@ public class SeekAndDestroy
         command = "CDUP" + CR + LF;
         sendStringToPort(command);
     }
-    private void retry(String filename)
+    private void retrieve(String filename)
     {
         command = "RETR" + filename + CR + LF;
         sendStringToPort(command);
@@ -90,6 +98,7 @@ public class SeekAndDestroy
         command = "QUIT" + CR + LF;
         sendStringToPort(command);
     }
+    // TODO: IF command requests data, then should listen to that one after calling this
     private InputStream sendStringToPort(String str)
     {
         try {
@@ -99,14 +108,18 @@ public class SeekAndDestroy
             outputStreamWriter.write(str, 0, str.length()); // Send command
             outputStreamWriter.flush();
 
-            return clientSocket.getInputStream();
-            /*InputStreamReader inputStreamReader =
-                    new InputStreamReader(clientSocket.getInputStream());
+            InputStream inputStream = clientSocket.getInputStream();
+
+            // Following print for debug, can delete
+            // The function returns the stream returned as a result
+
+            InputStreamReader inputStreamReader =
+                    new InputStreamReader(inputStream);
             BufferedReader bufferedReader =
                     new BufferedReader(inputStreamReader);
 
-            System.out.println(bufferedReader.readLine());*/
-
+            System.out.println(bufferedReader.readLine());
+            return inputStream;
         } catch (IOException e)
         {
             e.printStackTrace();
