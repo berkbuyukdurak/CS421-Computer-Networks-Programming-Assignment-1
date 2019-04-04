@@ -8,9 +8,7 @@ import java.util.Stack;
 
 public class SeekAndDestroy
 {
-    final static int controlPort = 60000;
     final static int dataPort = 53462;
-    final static String host = "localhost";
     final static String CR = "\r";
     final static String LF = "\n";
 
@@ -20,7 +18,8 @@ public class SeekAndDestroy
     Socket clientSocket;
     ServerSocket serverSocket;
     OutputStreamWriter outToServer;
-
+    TreeNode treeRoot = new TreeNode("treeRoot", "d",null);
+    TreeNode currentTreeNode = treeRoot;
 
     // Default Constructor
     public SeekAndDestroy(int controlPort, int dataPort, String host)
@@ -156,10 +155,49 @@ public class SeekAndDestroy
     }
 
     public int findTarget(){
-        ArrayList<String> directories = nlst();
+        Stack<TreeNode> dfsStack = new Stack<>();
+        dfsStack.push(treeRoot);
+        ArrayList<String> directories;// = nlst();
+        String[] checkingIfEmpty;
         //Checking if the directory is empty, going up if it is
-        String[] checkingIfEmpty = directories.get(0).split(":");
-        if(checkingIfEmpty.length == 1){
+        /*String[] checkingIfEmpty = directories.get(0).split(":");
+        if(checkingIfEmpty.length == 1)
+            return -1;
+
+        directories.set(0, directories.get(0).substring(2)); // 2 or 1 ??
+         */
+        while (dfsStack.isEmpty() == false)
+        {
+            currentTreeNode = dfsStack.pop();
+            if (currentTreeNode.processed == false) {
+                currentTreeNode.processed = true;
+                directories = nlst();
+                checkingIfEmpty = directories.get(0).split(":");
+                directories.set(0, directories.get(0).substring(2));
+                if (checkingIfEmpty.length == 1) {
+                    cdup();
+                    currentTreeNode = currentTreeNode.parent;
+                    continue;
+                }
+                for (String s : directories) {
+                    TreeNode newChild = new TreeNode(s.split(":")[0], s.split(":")[1], null);
+                    currentTreeNode.addChild(newChild);
+                    if (newChild.dataType.equals("d"))
+                        dfsStack.push(newChild);
+                    if (s.split(":")[0].equals("received.jpg")) {
+                        // Found
+                        retrieve("received.jpg");
+                        return 1;
+                    }
+                }
+            }
+            else {
+                cdup();
+                currentTreeNode = currentTreeNode.parent;
+            }
+        }
+        return -1;
+        /*if(checkingIfEmpty.length == 1){
             System.out.println("CD up because of no elements");
             cdup();
             while(!sizeStack.isEmpty()){
@@ -170,9 +208,7 @@ public class SeekAndDestroy
                 }
                 else
                     cdup();
-
             }
-
             return 1;
         }
         //Setting the first elements name correctly, I don't know why but 2 char garbage value is set
@@ -205,7 +241,6 @@ public class SeekAndDestroy
                 }
                 else
                     cdup();
-
             }
             return 1;
         }
@@ -222,6 +257,8 @@ public class SeekAndDestroy
         sizeStack.push(size);
         System.out.println();
         return 1;
+
+         */
     }
     public void loopSearch(){
         while(!directoryStack.isEmpty()){
@@ -233,13 +270,13 @@ public class SeekAndDestroy
                 break;
         }
     }
-
     //////////////////////////////////////////////////
     ///////////////             //////////////////////
     /////////////////////////////////////////////////
-
     public static void main(String[] args)
     {
+        int controlPort = Integer.parseInt(args[1]);
+        String host = args[0];
         SeekAndDestroy sad = new SeekAndDestroy(controlPort, dataPort, host);
         try
         {
@@ -248,7 +285,7 @@ public class SeekAndDestroy
             sad.serverSocket = new ServerSocket(dataPort);
             sad.sendPort(dataPort);
             sad.findTarget();
-            sad.loopSearch();
+            //sad.loopSearch();
             sad.retrieve("target.jpg");
             sad.delete("target.jpg");
             sad.quit();
@@ -258,6 +295,31 @@ public class SeekAndDestroy
         {
             ioe.printStackTrace();
             System.out.println("Connection Failure");
+        }
+    }
+    class TreeNode
+    {
+        String data;
+        String dataType;
+        boolean processed;
+        ArrayList<TreeNode> children;
+        TreeNode parent;
+        TreeNode(String data, String dataType, TreeNode parent)
+        {
+            this.data = data;
+            this.parent = parent;
+            this.dataType = dataType;
+            processed = false;
+            children = new ArrayList<TreeNode>();
+        }
+        public void addChild(String name, String dataType)
+        {
+            children.add(new TreeNode(name, dataType, this));
+        }
+        public void addChild(TreeNode treeNode)
+        {
+            treeNode.parent = this;
+            this.children.add(treeNode);
         }
     }
 }
