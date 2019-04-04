@@ -11,6 +11,8 @@ public class SeekAndDestroy
     final static int dataPort = 53462;
     final static String CR = "\r";
     final static String LF = "\n";
+    final static int POSITIVE_RESULT = 1;
+    final static int NEGATIVE_RESULT = 1;
 
     Stack<Integer> sizeStack = new Stack<>();
     Stack<String> directoryStack = new Stack<String>();
@@ -159,13 +161,22 @@ public class SeekAndDestroy
         dfsStack.push(treeRoot);
         ArrayList<String> directories;// = nlst();
         String[] checkingIfEmpty;
-        //Checking if the directory is empty, going up if it is
-        /*String[] checkingIfEmpty = directories.get(0).split(":");
-        if(checkingIfEmpty.length == 1)
-            return -1;
 
-        directories.set(0, directories.get(0).substring(2)); // 2 or 1 ??
-         */
+        /**
+         * Depth first search on a tree
+         * Look at the top of the stack
+         * if not root(first entrance) and node is not processed
+         * then go in the directory
+         *
+         * If directory contains nothing go up
+         * if it contains files but no directories
+         * goes down, fails to add anything to add to stack
+         * in the next loop it should go up since it is processed
+         *
+         * If it passes these checks then parses response and adds them as
+         * childs. Pushes them to the stack for further search if they are
+         * type directory
+        */
         while (dfsStack.isEmpty() == false)
         {
             currentTreeNode = dfsStack.peek();
@@ -200,83 +211,11 @@ public class SeekAndDestroy
                 if (s.split(":")[0].equals("target.jpg")) {
                     // Found
                     retrieve("target.jpg");
-                    return 1;
+                    return POSITIVE_RESULT;
                 }
             }
         }
-        return -1;
-        /*if(checkingIfEmpty.length == 1){
-            System.out.println("CD up because of no elements");
-            cdup();
-            while(!sizeStack.isEmpty()){
-                int s = sizeStack.pop();
-                if(s > 1){
-                    sizeStack.push(s-1);
-                    break;
-                }
-                else
-                    cdup();
-            }
-            return 1;
-        }
-        //Setting the first elements name correctly, I don't know why but 2 char garbage value is set
-        //if this process is not done
-        directories.set(0, directories.get(0).substring(2));
-        //Checking if the target is in the current directory, returning found flag if
-        for(int i = 0; i < directories.size(); i++){
-            if(directories.get(i).split(":")[0].equals("target.jpg")){
-                System.out.print("FOUND");
-                return 5;
-            }
-        }
-        //Checking if only the f type files are left in the directory
-        boolean fFlag = true;
-        for(int i = 0; i < directories.size(); i++){
-            String[] directoryContent = directories.get(i).split(":");
-
-            if(directoryContent[1].equals("d")){
-                fFlag = false;
-            }
-        }
-        if(fFlag){
-            System.out.println("Only f left, CD up");
-            cdup();
-            while(!sizeStack.isEmpty()){
-                int s = sizeStack.pop();
-                if(s > 1){
-                    sizeStack.push(s-1);
-                    break;
-                }
-                else
-                    cdup();
-            }
-            return 1;
-        }
-        //
-        int size = 0;
-        for(int i = 0; i < directories.size(); i++){
-            String[] directoryContent = directories.get(i).split(":");
-            System.out.print(directoryContent[0]+"/");
-            if(directoryContent[1].equals("d")){
-                directoryStack.push(directoryContent[0]);
-                size++;
-            }
-        }
-        sizeStack.push(size);
-        System.out.println();
-        return 1;
-
-         */
-    }
-    public void loopSearch(){
-        while(!directoryStack.isEmpty()){
-            System.out.println("CD into: "+directoryStack.peek());
-            System.out.print(sizeStack);
-            cwd(directoryStack.pop());
-            int i = findTarget();
-            if (i == 5)
-                break;
-        }
+        return NEGATIVE_RESULT;
     }
     //////////////////////////////////////////////////
     ///////////////             //////////////////////
@@ -292,9 +231,11 @@ public class SeekAndDestroy
             sad.sendPass("cs421");
             sad.serverSocket = new ServerSocket(dataPort);
             sad.sendPort(dataPort);
-            sad.findTarget();
-            //sad.loopSearch();
-            //sad.retrieve("target.jpg");
+            int result = sad.findTarget();
+            if (result == POSITIVE_RESULT)
+                System.out.println("FOUND");
+            else
+                System.out.println("NOT FOUND");
             sad.delete("target.jpg");
             sad.quit();
 
