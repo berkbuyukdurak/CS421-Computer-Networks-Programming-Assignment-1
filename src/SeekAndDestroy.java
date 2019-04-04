@@ -34,8 +34,7 @@ public class SeekAndDestroy
             e.printStackTrace();
         }
     }
-    // TODO: IF command requests data, then should listen to that one after calling this
-    public void sendStringToPort(String str)
+    public int sendStringToPort(String str)
     {
         try {
             outToServer = new OutputStreamWriter(clientSocket.getOutputStream(), "US-ASCII");
@@ -47,10 +46,16 @@ public class SeekAndDestroy
             BufferedReader bufferedReader =
                     new BufferedReader(inputStreamReader);
 
-            System.out.println(bufferedReader.readLine());
+            String tmp = bufferedReader.readLine();
+            System.out.println(tmp.split(" ")[0]);
+            int responseCode = Integer.parseInt(tmp.split(" ")[0]);
+            if (responseCode == 400)
+                System.out.println("CODE 400 Received");
+            return responseCode;
         } catch (IOException e)
         {
             e.printStackTrace();
+            return NEGATIVE_RESULT;
         }
     }
     public ArrayList<String> readPort(){
