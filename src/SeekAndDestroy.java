@@ -8,9 +8,7 @@ import java.util.Stack;
 
 public class SeekAndDestroy
 {
-    final static int controlPort = 60000;
     final static int dataPort = 53462;
-    final static String host = "localhost";
     final static String CR = "\r";
     final static String LF = "\n";
 
@@ -21,11 +19,9 @@ public class SeekAndDestroy
     ServerSocket serverSocket;
     OutputStreamWriter outToServer;
 
-
     // Default Constructor
     public SeekAndDestroy(int controlPort, int dataPort, String host)
     {
-
         try {
             clientSocket = new Socket(host, controlPort);
         }catch (IOException e)
@@ -170,9 +166,7 @@ public class SeekAndDestroy
                 }
                 else
                     cdup();
-
             }
-
             return 1;
         }
         //Setting the first elements name correctly, I don't know why but 2 char garbage value is set
@@ -205,7 +199,6 @@ public class SeekAndDestroy
                 }
                 else
                     cdup();
-
             }
             return 1;
         }
@@ -240,6 +233,8 @@ public class SeekAndDestroy
 
     public static void main(String[] args)
     {
+        int controlPort = Integer.parseInt(args[1]);
+        String host = args[0];
         SeekAndDestroy sad = new SeekAndDestroy(controlPort, dataPort, host);
         try
         {
