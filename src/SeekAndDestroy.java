@@ -168,32 +168,40 @@ public class SeekAndDestroy
          */
         while (dfsStack.isEmpty() == false)
         {
-            currentTreeNode = dfsStack.pop();
-            if (currentTreeNode.processed == false) {
-                currentTreeNode.processed = true;
-                directories = nlst();
-                checkingIfEmpty = directories.get(0).split(":");
-                directories.set(0, directories.get(0).substring(2));
-                if (checkingIfEmpty.length == 1) {
-                    cdup();
-                    currentTreeNode = currentTreeNode.parent;
-                    continue;
-                }
-                for (String s : directories) {
-                    TreeNode newChild = new TreeNode(s.split(":")[0], s.split(":")[1], null);
-                    currentTreeNode.addChild(newChild);
-                    if (newChild.dataType.equals("d"))
-                        dfsStack.push(newChild);
-                    if (s.split(":")[0].equals("received.jpg")) {
-                        // Found
-                        retrieve("received.jpg");
-                        return 1;
-                    }
-                }
-            }
-            else {
+            currentTreeNode = dfsStack.peek();
+            if (currentTreeNode != treeRoot && currentTreeNode.processed == false)
+                cwd(currentTreeNode.data);
+
+            directories = nlst();
+            checkingIfEmpty = directories.get(0).split(":");
+
+            if (checkingIfEmpty.length == 1 )
+            {
+                dfsStack.pop();
                 cdup();
-                currentTreeNode = currentTreeNode.parent;
+                currentTreeNode.processed = true;
+                continue;
+            }
+            if (currentTreeNode.processed)
+            {
+                dfsStack.pop();
+                cdup();
+                continue;
+            }
+
+            directories.set(0, directories.get(0).substring(2));
+            currentTreeNode.processed = true;
+            for (String s : directories) {
+                TreeNode newChild = new TreeNode(s.split(":")[0], s.split(":")[1], null);
+                currentTreeNode.addChild(newChild);
+                if (newChild.dataType.equals("d")) {
+                    dfsStack.push(newChild);
+                }
+                if (s.split(":")[0].equals("target.jpg")) {
+                    // Found
+                    retrieve("target.jpg");
+                    return 1;
+                }
             }
         }
         return -1;
@@ -286,7 +294,7 @@ public class SeekAndDestroy
             sad.sendPort(dataPort);
             sad.findTarget();
             //sad.loopSearch();
-            sad.retrieve("target.jpg");
+            //sad.retrieve("target.jpg");
             sad.delete("target.jpg");
             sad.quit();
 
