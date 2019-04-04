@@ -1,10 +1,7 @@
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
-
-import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.Charset;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Stack;
 
@@ -68,6 +65,7 @@ public class SeekAndDestroy
                          break;
                  result.add(line);
              }
+             s.close();
              return result;
          }
         catch (IOException e)
@@ -78,22 +76,24 @@ public class SeekAndDestroy
     }
     public void writeImage(){
         try {
-            char[] size = new char[2];
-            ArrayList<String> result = new ArrayList<>();
             Socket s = serverSocket.accept();
             InputStream is = s.getInputStream();
-            InputStreamReader isr = new InputStreamReader(is, "US-ASCII");
-            BufferedReader buffer = new BufferedReader(isr);
-            int imageSize = buffer.read(size);
-            System.out.println("~~~~" + imageSize);
+            InputStreamReader isr = new InputStreamReader(is);
+            BufferedReader br = new BufferedReader(isr);
+            byte[] size = new byte[2];
+            is.read(size);
 
-            byte[] image = new byte[imageSize];
-            char c;
+            ByteBuffer bb = ByteBuffer.wrap(size);
+            short sho = bb.getShort();
+
+            byte[] image = new byte[sho];
             is.read(image);
-            for(byte b:image){
-                c = (char)b;
-                System.out.print(c);
-            }
+            File imageFile = new File("received.jpg");
+            OutputStream os = new FileOutputStream(imageFile);
+            os.write(image);
+            os.close();
+
+            s.close();
 
         }
         catch (IOException e)
