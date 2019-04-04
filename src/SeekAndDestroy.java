@@ -1,11 +1,12 @@
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
+
 import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.PriorityQueue;
-import java.util.Queue;
+import java.util.Stack;
 
 
 public class SeekAndDestroy
@@ -16,7 +17,7 @@ public class SeekAndDestroy
     final static String CR = "\r";
     final static String LF = "\n";
 
-    Queue<String> directoryQueue = new PriorityQueue<String>();
+    Stack<String> directoryStack = new Stack<String>();
     String command;
     Socket clientSocket;
     ServerSocket serverSocket;
@@ -40,6 +41,13 @@ public class SeekAndDestroy
             outToServer = new OutputStreamWriter(clientSocket.getOutputStream(), "US-ASCII");
             outToServer.write(str, 0, str.length());
             outToServer.flush();
+
+            InputStreamReader inputStreamReader =
+                    new InputStreamReader(clientSocket.getInputStream());
+            BufferedReader bufferedReader =
+                    new BufferedReader(inputStreamReader);
+
+            System.out.println(bufferedReader.readLine());
         } catch (IOException e)
         {
             e.printStackTrace();
@@ -54,7 +62,7 @@ public class SeekAndDestroy
              BufferedReader buffer = new BufferedReader(isr);
              while(true) {
                  String line = buffer.readLine();
-                 if (line == null || line.equals(""))
+                 if (line == null || line.equals("0000000000000000"))
                          break;
                  result.add(line);
              }
@@ -120,18 +128,51 @@ public class SeekAndDestroy
     }
 
     public int findTarget(){
+        boolean fFlag = true;
+        boolean terminateFlag = false;
         ArrayList<String> directories = nlst();
         System.out.println(directories.size());
-        if(directories.size() > 0){
+        if(directories.get(0).equals("")) {
+            cdup();
+            System.out.println("????11");
+            return 1;
+        }
+        if(directories.size() != 0){
             directories.set(0, directories.get(0).substring(2));
         }
         for(int i = 0; i < directories.size(); i++){
-
+            if(directories.get(i).equals("")) {
+                cdup();
+                System.out.println("????11");
+                terminateFlag = true;
+                break;
+            }
             String[] directoryContent = directories.get(i).split(":");
-            System.out.println(directoryContent[0] +"~"+ directoryContent[1]);
-
+            System.out.print(directoryContent[0] +"~"+ directoryContent[1]);
+            if(directoryContent[0].equals("target.jpg")){
+                System.out.print("found");
+                return 5;
+            }
+            if(directoryContent[1].equals("f")){
+                continue;
+            }
+            fFlag = false;
+            directoryStack.push(directoryContent[0]);
+        }
+        if(fFlag && !terminateFlag) {
+            System.out.println("???222");
+            cdup();
         }
         return 1;
+    }
+    public void recursiveSearch(){
+        while(!directoryStack.isEmpty()){
+            System.out.println("CD Into " + directoryStack.peek());
+            cwd(directoryStack.pop());
+            int i = findTarget();
+            if (i == 5)
+                break;
+        }
     }
 
     //////////////////////////////////////////////////
@@ -149,6 +190,7 @@ public class SeekAndDestroy
             sad.sendPort(dataPort);
             //sad.nlst();
             sad.findTarget();
+            sad.recursiveSearch();
             //sad.cdup();
             sad.quit();
 
