@@ -149,6 +149,9 @@ public class SeekAndDestroy
 
             return 1;
         }
+        //Setting the first elements name correctly, I don't know why but 2 char garbage value is set
+        //if this process is not done
+        directories.set(0, directories.get(0).substring(2));
         //Checking if the target is in the current directory, returning found flag if
         for(int i = 0; i < directories.size(); i++){
             if(directories.get(i).split(":")[0].equals("target.jpg")){
@@ -156,9 +159,6 @@ public class SeekAndDestroy
                 return 5;
             }
         }
-        //Setting the first elements name correctly, I don't know why but 2 char garbage value is set
-        //if this process is not done
-        directories.set(0, directories.get(0).substring(2));
         //Checking if only the f type files are left in the directory
         boolean fFlag = true;
         for(int i = 0; i < directories.size(); i++){
