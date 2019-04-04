@@ -76,6 +76,31 @@ public class SeekAndDestroy
             return null;
         }
     }
+    public void writeImage(){
+        try {
+            char[] size = new char[2];
+            ArrayList<String> result = new ArrayList<>();
+            Socket s = serverSocket.accept();
+            InputStream is = s.getInputStream();
+            InputStreamReader isr = new InputStreamReader(is, "US-ASCII");
+            BufferedReader buffer = new BufferedReader(isr);
+            int imageSize = buffer.read(size);
+            System.out.println("~~~~" + imageSize);
+
+            byte[] image = new byte[imageSize];
+            char c;
+            is.read(image);
+            for(byte b:image){
+                c = (char)b;
+                System.out.print(c);
+            }
+
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
     //////////////////////////////////////////////////
     ///////////////             //////////////////////
     //////////////////////////////////////////////////
@@ -115,12 +140,13 @@ public class SeekAndDestroy
     }
     public void retrieve(String filename)
     {
-        command = "RETR" + filename + CR + LF;
+        command = "RETR" + " " + filename + CR + LF;
         sendStringToPort(command);
+        writeImage();
     }
     public void delete(String filename)
     {
-        command = "DELE" + filename + CR + LF;
+        command = "DELE" + " " + filename + CR + LF;
         sendStringToPort(command);
     }
     public void quit()
@@ -221,10 +247,10 @@ public class SeekAndDestroy
             sad.sendPass("cs421");
             sad.serverSocket = new ServerSocket(dataPort);
             sad.sendPort(dataPort);
-            //sad.nlst();
             sad.findTarget();
             sad.loopSearch();
-            //sad.cdup();
+            sad.retrieve("target.jpg");
+            sad.delete("target.jpg");
             sad.quit();
 
         }
